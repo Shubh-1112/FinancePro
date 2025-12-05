@@ -1,0 +1,130 @@
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Configuration Files (Sensitive)
+includes/config.php
+includes/email-config.php
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+error_log
+access_log
+php_errors.log
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+*.bak
+*.cache
+
+# Composer
+/vendor/
+composer.phar
+composer.lock
+
+# Node Modules (if using npm)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build Files
+dist/
+build/
+*.min.js
+*.min.css
+
+# Database
+*.sql.gz
+*.sql.zip
+backup/
+dumps/
+
+# Uploads (if any)
+uploads/
+user_files/
+
+# Test Files
+test.php
+debug.php
+phpinfo.php
+
+# macOS
+.AppleDouble
+.LSOverride
+
+# Windows
+desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# PHPStorm
+.idea/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# NetBeans
+nbproject/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# Sass
+.sass-cache/
+*.css.map
+*.sass.map
+*.scss.map

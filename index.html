@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinancePro - Personal Finance Planner</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Gravitas+One&family=Righteous&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/bbh-sans-hegarty/index.css">
+    <!-- Chart.js for charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- Spline 3D viewer -->
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.10.81/build/spline-viewer.js"></script>
+    <style>
+        /* Landing hero tweaks */
+        #landing-hero {
+            margin-top: 0;
+            height: 85vh;
+            /* slightly smaller to crop bottom watermark */
+            border-radius: 0;
+            /* remove rounded corners */
+            overflow: hidden;
+            background: #f5f5f5;
+            /* match spline background */
+        }
+
+        #landing-hero .spline-wrap {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #landing-hero spline-viewer {
+            width: 100%;
+            height: 115%;
+            /* a bit taller so we can shift up to hide badge */
+            display: block;
+            transform: translateY(-28px);
+            /* move up to crop the corner watermark */
+        }
+
+        #landing-hero .bottom-fade {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 120px;
+            pointer-events: none;
+            background: linear-gradient(to top, var(--background), transparent);
+        }
+
+        #enter-dashboard {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+        }
+
+        /* Hero overlay copy */
+        .hero-copy {
+            position: absolute;
+            left: 1rem;
+            top: 38%;
+            transform: translateY(-50%);
+            max-width: 36ch;
+            font-family: 'Gravitas One';
+            font-weight: 800;
+            font-size: clamp(4rem, 4.2vw + 0.5rem, 4rem);
+            line-height: 1.1;
+            text-align: left;
+            color: var(--text-primary);
+            text-shadow: 0 1px 1x rgba(0, 0, 0, 0.25);
+            pointer-events: none;
+        }
+
+        .dark .hero-copy {
+            color: #ebe9e9;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Right side hero text */
+        .hero-copy-right {
+            position: absolute;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            max-width: 24ch;
+            font-family: 'BBH Sans Hegarty', sans-serif;
+            font-weight: 600;
+            font-size: clamp(1.2rem, 2.5vw + 0.5rem, 2rem);
+            line-height: 1.2;
+            text-align: right;
+            background: linear-gradient(135deg, var(--color-purple-500), var(--color-blue-500));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+            pointer-events: none;
+        }
+
+        .dark .hero-copy-right {
+            background: linear-gradient(135deg, #a855f7, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Dark mode toggle positioning */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 5rem;
+            right: 1.5rem;
+            z-index: 60;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Navbar brand font */
+        .brand-text {
+            font-family: 'Righteous', cursive;
+        }
+
+        @media (max-width: 768px) {
+            .hero-copy {
+                left: 1rem;
+                top: 34%;
+                max-width: 28ch;
+                font-size: clamp(1.5rem, 6vw, 2.25rem);
+            }
+
+            .hero-copy-right {
+                right: 1rem;
+                top: 60%;
+                max-width: 20ch;
+                font-size: clamp(1rem, 4vw, 1.5rem);
+            }
+
+            .dark-mode-toggle {
+                top: 4.5rem;
+                right: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" class="app">
+        <!-- Dark Mode Toggle -->
+        <button id="darkModeToggle" class="dark-mode-toggle">
+            <i data-lucide="moon" class="icon-moon"></i>
+            <i data-lucide="sun" class="icon-sun hidden"></i>
+        </button>
+
+        <!-- Navigation -->
+        <nav id="navbar" class="navbar">
+            <div class="navbar-container">
+                <div class="navbar-brand">
+                    <div class="brand-icon">💰</div>
+                    <a href="index.html" style="text-decoration: none; color: inherit; "><span
+                            class="brand-text">FinancePro</span></a>
+                </div>
+
+                <div class="navbar-nav">
+                    <!-- Dropdown Menu -->
+                    <div class="nav-dropdown">
+                        <button class="dropdown-toggle" id="navDropdownToggle">
+                            <i data-lucide="menu"></i>
+                            <i data-lucide="chevron-down"></i>
+                        </button>
+                        <div class="dropdown-menu" id="navDropdownMenu">
+                            <button class="nav-item active" data-page="dashboard">
+                                <i data-lucide="layout-dashboard"></i>
+                                <span>Dashboard</span>
+                            </button>
+                            <button class="nav-item" data-page="add-expense">
+                                <i data-lucide="plus-circle"></i>
+                                <span>Add Transaction</span>
+                            </button>
+                            <button class="nav-item" data-page="smart-planner">
+                                <i data-lucide="wand-2"></i>
+                                <span>AI Planner</span>
+                            </button>
+                            <button class="nav-item" data-page="smart-plan">
+                                <i data-lucide="file-text"></i>
+                                <span>Review Section</span>
+                            </button>
+                            <button class="nav-item" data-page="rewards">
+                                <i data-lucide="award"></i>
+                                <span>Rewards</span>
+                            </button>
+                            <button class="nav-item" data-page="feedback">
+                                <i data-lucide="message-square"></i>
+                                <span>Feedback</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Settings Icon Only -->
+                    <button class="nav-item settings-icon-only" data-page="settings">
+                        <i data-lucide="settings"></i>
+                        <span>Settings</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Scroll Progress Bar -->
+            <div id="scroll-progress" class="scroll-progress"></div>
+        </nav>
+
+        <!-- Main Content -->
+        <main id="main-content" class="main-content">
+            <div id="page-container" class="page-container">
+                <!-- Landing Hero with Spline -->
+                <section id="landing-hero" style="position: relative; margin-bottom: 1.5rem;">
+                    <div class="spline-wrap">
+                        <spline-viewer
+                            url="https://prod.spline.design/BTJU43fxjR3hXcbo/scene.splinecode"></spline-viewer>
+                        <div class="bottom-fade"></div>
+                    </div>
+                    <div class="hero-copy"><br><br>Small Steps <br>Lead to, <br>Big <br>Savings.</div>
+                    <div class="hero-copy-right">AI meets Savings —<br> Welcome <br>To the Future.</div>
+                    <!-- Button removed as requested -->
+                </section>
+                <!-- Dashboard Page -->
+                <div id="dashboard-page" class="page-content active">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Dashboard</h1>
+                            <p class="page-subtitle">Track your financial health at a glance</p>
+                        </div>
+                        <button id="downloadPdfBtn" class="btn-primary">
+                            <i data-lucide="download"></i>
+                            Download Financial Report
+                        </button>
+                    </div>
+
+                    <!-- Overview Cards -->
+                    <div class="cards-grid">
+                        <div class="card overview-card income-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Total Income</h3>
+                                <div class="card-icon income-icon">
+                                    <i data-lucide="dollar-sign"></i>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <div class="amount" id="total-income">Loading...</div>
+                                <p class="trend positive">
+                                    <i data-lucide="trending-up"></i>
+                                    <span>Monthly</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="card overview-card expenses-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Total Expenses</h3>
+                                <div class="card-icon expenses-icon">
+                                    <i data-lucide="wallet"></i>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <div class="amount" id="total-expenses">Loading...</div>
+                                <p class="trend negative">
+                                    <i data-lucide="trending-down"></i>
+                                    <span id="expense-percentage">Calculating...</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="card overview-card total-savings-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Total Savings</h3>
+                                <div class="card-icon total-savings-icon">
+                                    <i data-lucide="piggy-bank"></i>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <div class="amount" id="total-savings">Loading...</div>
+                                <p class="description">Current accumulated savings</p>
+                            </div>
+                        </div>
+
+                        <div class="card overview-card savings-goal-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Savings Goal</h3>
+                                <div class="card-icon savings-icon">
+                                    <i data-lucide="target"></i>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <div class="amount" id="savings-goal">Loading...</div>
+                                <p class="description">Target for this month</p>
+                            </div>
+                        </div>
+
+                        <div class="card overview-card remaining-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Remaining Budget</h3>
+                                <div class="card-icon remaining-icon">
+                                    <i data-lucide="piggy-bank"></i>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <div class="amount" id="remaining-budget">Loading...</div>
+                                <p class="description" id="remaining-description">Calculating...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Section -->
+                    <div class="charts-grid">
+                        <div class="card chart-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Expense Distribution</h3>
+                            </div>
+                            <div class="card-content">
+                                <canvas id="expenseChart" width="400" height="300"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card chart-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Expense Trends</h3>
+                            </div>
+                            <div class="card-content">
+                                <canvas id="trendsChart" width="400" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Savings Progress -->
+                    <div class="card progress-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Savings Goal Progress</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="progress-info">
+                                <span>Current: <span id="current-savings">Loading...</span></span>
+                                <span>Goal: <span id="goal-amount">Loading...</span></span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="savings-progress-fill" style="width: 0%"></div>
+                            </div>
+                            <p class="progress-text" id="progress-message">
+                                Calculating progress...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other pages will be loaded here dynamically -->
+                <div id="add-expense-page" class="page-content"></div>
+                <div id="smart-planner-page" class="page-content"></div>
+                <div id="smart-plan-page" class="page-content"></div>
+                <div id="rewards-page" class="page-content"></div>
+                <div id="feedback-page" class="page-content"></div>
+                <div id="settings-page" class="page-content"></div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-container">
+                <p>&copy; 2025 FinancePro.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Load jsPDF and AutoTable plugin before our application scripts -->
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- PDF Generator Module -->
+    <script src="js/pdf-generator.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/charts.js"></script>
+    <script>
+        // Check if user is logged in
+        fetch('php/check_session.php')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.logged_in) {
+                    window.location.href = 'login.html';
+                } else {
+                    // User is logged in, proceed with initialization
+                    // Initialize Lucide icons
+                    lucide.createIcons();
+
+                    // Scroll progress bar
+                    (function () {
+                        const progressBar = document.getElementById('scroll-progress');
+                        if (!progressBar) return;
+
+                        function updateProgress() {
+                            const scrollTop = window.pageYOffset;
+                            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                            const scrollPercent = (scrollTop / docHeight) * 100;
+                            progressBar.style.width = Math.min(scrollPercent, 100) + '%';
+                        }
+
+                        window.addEventListener('scroll', updateProgress);
+                        updateProgress(); // Initial call
+                    })();
+                }
+            })
+            .catch(error => {
+                console.error('Error checking session:', error);
+                window.location.href = 'login.html';
+            });
+    </script>
+</body>
+
+</html>
